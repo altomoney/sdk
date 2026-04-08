@@ -17,6 +17,11 @@
     "AGENTS.md",
     "agent-reference.md"
   ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/altomoney/sdk",
+    "directory": "packages/sdk"
+  },
   "publishConfig": {
     "access": "public"
   },
