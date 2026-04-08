@@ -1,0 +1,19 @@
+// See https://containers.dev/implementors/json_reference/ for configuration reference
+{
+	"name": "sdk",
+	"build": {
+		"dockerfile": "Dockerfile"
+	},
+	"postStartCommand": [
+        "/bin/bash",
+        ".devcontainer/post_install.sh"
+    ],
+	"customizations": {
+		"vscode": {
+			"extensions": [
+				"esbenp.prettier-vscode@11.0.3",
+				"Graphite.gti-vscode"
+			]
+		}
+	}
+}

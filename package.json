@@ -1,0 +1,29 @@
+{
+  "name": "@alto/workspace",
+  "private": true,
+  "version": "0.0.0",
+  "description": "Monorepo workspace for Alto SDK packages.",
+  "packageManager": "bun@1.3.11",
+  "workspaces": [
+    "packages/*"
+  ],
+  "scripts": {
+    "build": "bun --workspaces run build",
+    "clean": "rm -rf packages/*/dist",
+    "typecheck": "bun --workspaces run typecheck",
+    "test": "bun --workspaces run test",
+    "validate": "bun run typecheck && bun run build && bun run test",
+    "changeset": "bunx changeset",
+    "changeset:status": "bunx changeset status --verbose",
+    "version-packages": "bunx changeset version",
+    "release": "bunx changeset publish",
+    "release:dry-run": "bun run validate && bun --workspaces run publish:dry-run"
+  },
+  "devDependencies": {
+    "@changesets/cli": "latest",
+    "@types/node": "^25.5.2",
+    "typescript": "latest",
+    "viem": "^2.47.10",
+    "vitest": "latest"
+  }
+}

@@ -1,0 +1,30 @@
+{
+  "name": "@altomoney/sdk",
+  "version": "0.1.0",
+  "description": "Framework-agnostic Alto protocol entity SDK.",
+  "type": "module",
+  "main": "./dist/index.js",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    }
+  },
+  "files": [
+    "dist",
+    "AGENTS.md",
+    "agent-reference.md"
+  ],
+  "publishConfig": {
+    "access": "public"
+  },
+  "scripts": {
+    "build": "bunx tsc -p tsconfig.build.json",
+    "clean": "rm -rf dist",
+    "typecheck": "bunx tsc --noEmit",
+    "test": "bun x vitest run",
+    "publish:dry-run": "npm publish --dry-run --access public"
+  }
+}

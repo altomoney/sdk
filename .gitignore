@@ -1,0 +1,6 @@
+dist
+packages/*/dist
+*.tsbuildinfo
+packages/*/*.tsbuildinfo
+node_modules
+.env
