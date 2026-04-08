@@ -13,6 +13,8 @@ jobs:
   release:
     if: ${{ !contains(github.event.head_commit.message, '[skip release]') }}
     runs-on: ubuntu-latest
+    env:
+      NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
 
     steps:
       - name: Checkout repository
@@ -83,16 +85,16 @@ jobs:
           git push
 
       - name: Configure npm token fallback
-        if: steps.changesets.outputs.has_changesets == 'true' && secrets.NPM_TOKEN != ''
+        if: steps.changesets.outputs.has_changesets == 'true' && env.NPM_TOKEN != ''
         shell: bash
         run: |
           printf "//registry.npmjs.org/:_authToken=%s\n" "$NODE_AUTH_TOKEN" > ~/.npmrc
         env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+          NODE_AUTH_TOKEN: ${{ env.NPM_TOKEN }}
 
       - name: Publish changed packages
         if: steps.changesets.outputs.has_changesets == 'true'
         run: bun run release
         env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+          NODE_AUTH_TOKEN: ${{ env.NPM_TOKEN }}
           NPM_CONFIG_PROVENANCE: true
