@@ -21,7 +21,7 @@ Use this file when reasoning about `@altomoney/sdk`.
 - `Market`: accrual, liquidity, rates, conversions, LTV, health checks
 - `Position`: convenience wrapper over a `Market` snapshot for user-level metrics
 - `Vault`: ERC-4626-style vault math over market allocations
-- `FixedRateIrm` and `AdaptiveCurveIrm`: interest rate models
+- `FixedRateIrm`, `AdaptiveCurveIrm` and `PegResponsiveExponentialIrm`: interest rate models
 - `DlbDcfPriorityLiquidationEngine`: liquidation and quote calculations
 
 ## Good Usage

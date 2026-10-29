@@ -12,6 +12,7 @@ export enum MarketType {
 export enum IrmType {
   FixedRate = "fixed-rate",
   AdaptiveCurve = "adaptive-curve",
+  PegResponsiveExponential = "peg-responsive-exponential",
 }
 
 export enum LiquidationEngineType {

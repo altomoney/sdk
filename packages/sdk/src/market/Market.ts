@@ -1,4 +1,8 @@
-import { AdaptiveCurveIrm, FixedRateIrm } from "../irm/index.js";
+import {
+  AdaptiveCurveIrm,
+  FixedRateIrm,
+  PegResponsiveExponentialIrm,
+} from "../irm/index.js";
 import type { IIrm } from "../irm/types.js";
 import { AssetShareConversionMath, FixedPointMath, rateToApy } from "../math/index.js";
 import type { MarketPosition, BigIntish } from "../types.js";
@@ -156,7 +160,7 @@ export class Market {
 
   accrueInterest(timestamp: BigIntish = currentTimestamp()) {
     const now = toBigInt(timestamp);
-    if (!this.interestRateModel || now <= this.lastUpdate) return new Market(this);
+    if (!this.interestRateModel || now < this.lastUpdate) return new Market(this);
 
     const nextIrm = this.cloneInterestRateModel();
     const { interest } = nextIrm.updateInterestRate(
@@ -327,6 +331,13 @@ export class Market {
       return new AdaptiveCurveIrm(
         this.interestRateModel.config,
         this.interestRateModel.state,
+      );
+    }
+    if (this.interestRateModel instanceof PegResponsiveExponentialIrm) {
+      return new PegResponsiveExponentialIrm(
+        this.interestRateModel.config,
+        this.interestRateModel.state,
+        this.interestRateModel.pegObservation,
       );
     }
 
