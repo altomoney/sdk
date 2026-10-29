@@ -1,6 +1,6 @@
 {
   "name": "@altomoney/sdk",
-  "version": "0.1.5",
+  "version": "0.2.0",
   "description": "Framework-agnostic Alto protocol entity SDK.",
   "type": "module",
   "main": "./dist/index.js",
