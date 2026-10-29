@@ -11,6 +11,7 @@ import {
   Vault,
   FixedRateIrm,
   AdaptiveCurveIrm,
+  PegResponsiveExponentialIrm,
   DlbDcfPriorityLiquidationEngine,
 } from "@altomoney/sdk";
 ```
@@ -44,6 +45,7 @@ import {
 
 - `FixedRateIrm` holds a constant per-second borrow rate.
 - `AdaptiveCurveIrm` updates rate-at-target based on utilization around a configured target.
+- `PegResponsiveExponentialIrm` accrues at its stored rate, then each checkpoint stores a new rate from the DUSD peg observation passed to the constructor. The base rate may be zero. `previewBorrowRate` returns the rate the next checkpoint would store, and an invalid, missing or stale observation keeps the stored rate within the current floor and cap.
 - Compound interest uses a Taylor-series approximation designed to match covered on-chain behavior.
 
 ## Liquidation Notes

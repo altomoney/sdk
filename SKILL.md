@@ -162,9 +162,9 @@ pos.liquidationQuote;       // full LiquidationQuote or undefined
 pos.accrueInterest(ts);     // returns new AccrualPosition
 ```
 
-### `FixedRateIrm` / `AdaptiveCurveIrm`
+### `FixedRateIrm` / `AdaptiveCurveIrm` / `PegResponsiveExponentialIrm`
 
-Both implement `IIrm` with `previewInterestRate` (read-only) and `updateInterestRate`
+All implement `IIrm` with `previewInterestRate` (read-only) and `updateInterestRate`
 (mutates internal state).
 
 ```typescript
@@ -176,6 +176,15 @@ const adaptiveIrm = new AdaptiveCurveIrm(
   { curveSteepness, adjustmentSpeed, targetUtilization, initialRateAtTarget, minRateAtTarget, maxRateAtTarget },
   { rateAtTarget, lastUpdate },
 );
+
+// Peg responsive: accrues at the stored rate, then stores a rate derived from the
+// DUSD peg observation (raw IDusdPegOracle.getPrice output). baseRate may be 0.
+const pegIrm = new PegResponsiveExponentialIrm(
+  { recoveryPrice, stressPrice, baseRate, stressRate, maxRate, doublingDistance, recoveryDelay, maxOracleAge },
+  { borrowRate, lastUpdate, recoveryStartedAt, stressMode },
+  { priceWad, observedAt, valid },
+);
+pegIrm.previewBorrowRate(nowSeconds); // rate the next checkpoint would store
 ```
 
 Interest calculation: `totalBorrowed * calculateCompoundInterest(rate, elapsed) / WAD`.
