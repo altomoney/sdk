@@ -160,7 +160,7 @@ export class Market {
 
   accrueInterest(timestamp: BigIntish = currentTimestamp()) {
     const now = toBigInt(timestamp);
-    if (!this.interestRateModel || now <= this.lastUpdate) return new Market(this);
+    if (!this.interestRateModel || now < this.lastUpdate) return new Market(this);
 
     const nextIrm = this.cloneInterestRateModel();
     const { interest } = nextIrm.updateInterestRate(

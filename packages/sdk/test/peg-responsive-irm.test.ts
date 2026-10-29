@@ -111,6 +111,20 @@ describe("PegResponsiveExponentialIrm with a zero base rate", () => {
     expect(market.borrowRate).toBe(0n);
   });
 
+  it("refreshes the rate at a checkpoint in the same second as the last update", () => {
+    const stressed = { priceWad: 990_000_000_000_000_000n, observedAt: START, valid: true };
+    const irm = new PegResponsiveExponentialIrm(config, initialState(0n), stressed);
+    const accrued = frxUsdMintMarket(irm, START).accrueInterest(START);
+
+    expect(accrued.totalBorrowAssets).toBe(DEBT);
+    expect((accrued.interestRateModel as PegResponsiveExponentialIrm).state).toEqual({
+      borrowRate: 4n * config.stressRate,
+      lastUpdate: START,
+      recoveryStartedAt: 0n,
+      stressMode: true,
+    });
+  });
+
   it("treats a missing observation like a reverting oracle and holds the zero rate", () => {
     const irm = new PegResponsiveExponentialIrm(config, initialState(0n));
 
