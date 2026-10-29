@@ -293,6 +293,8 @@ skips gracefully without).
 
 - Add release intent with `bun run changeset`.
 - Merges to `main` trigger the GitHub Actions release workflow.
-- The release workflow versions changed workspace packages, commits the version updates back to `main`, and publishes them to npm.
+- The release workflow versions changed workspace packages, commits the version updates back to `main`, and stages them on npm with `npm stage publish`.
+- A package maintainer approves each staged version on npmjs.com (Staged Packages tab) or with `npm stage approve <stage-id>`. Both require 2FA.
+- To retry staging, run the Release workflow manually with `workflow_dispatch`. It stages any public package version that is missing from npm.
 - For local verification without publishing, run `bun run release:dry-run`.
-- Prefer npm trusted publishing from GitHub Actions. If a token fallback is needed, store it only as the `NPM_TOKEN` GitHub Actions secret and never commit it to the repo.
+- The workflow authenticates with npm trusted publishing (OIDC) and needs no npm token. Never commit npm tokens to the repo.

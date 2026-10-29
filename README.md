@@ -21,7 +21,9 @@ bun run validate
 ## Releases
 
 - Version changes with `bun run changeset`
-- Pushes to `main` run CI and publish changed public packages
+- Pushes to `main` run CI, version changed packages and stage them on npm
+- A package maintainer approves staged versions on npmjs.com with 2FA
+- Retry staging by running the Release workflow with `workflow_dispatch`
 - Local release verification: `bun run release:dry-run`
 
 ## Agent Docs
