@@ -16,7 +16,6 @@
     "changeset": "bunx changeset",
     "changeset:status": "bunx changeset status --verbose",
     "version-packages": "bunx changeset version",
-    "release": "bunx changeset publish",
     "release:dry-run": "bun run validate && bun --workspaces run publish:dry-run"
   },
   "devDependencies": {

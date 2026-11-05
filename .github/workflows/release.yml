@@ -1,5 +1,9 @@
 name: Release
 
+# Versions packages from pending changesets and stages them on npm with
+# trusted publishing. A maintainer then approves each staged version on
+# npmjs.com with 2FA before it goes live.
+
 on:
   push:
     branches:
@@ -7,15 +11,17 @@ on:
   workflow_dispatch:
 
 permissions:
-  contents: write
-  id-token: write
+  contents: write # push the version commit
+  id-token: write # authenticate to npm with trusted publishing
+
+concurrency:
+  group: release
+  cancel-in-progress: false
 
 jobs:
   release:
-    if: ${{ github.event_name == 'workflow_dispatch' || !contains(github.event.head_commit.message, '[skip release]') }}
+    if: github.event_name == 'workflow_dispatch' || !contains(github.event.head_commit.message, '[skip release]')
     runs-on: ubuntu-latest
-    env:
-      NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
 
     steps:
       - name: Checkout repository
@@ -32,7 +38,10 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: 22
-          registry-url: https://registry.npmjs.org
+
+      # Staged publishing needs npm 11.15.0 or newer. Node 22 ships npm 10.
+      - name: Install npm
+        run: npm install -g npm@11.21.1
 
       - name: Install dependencies
         run: bun install --frozen-lockfile
@@ -40,63 +49,44 @@ jobs:
       - name: Validate workspace
         run: bun run validate
 
-      - name: Detect pending changesets
-        id: changesets
-        shell: bash
-        run: |
-          shopt -s nullglob
-          files=(.changeset/*.md)
-          pending=0
-
-          for file in "${files[@]}"; do
-            if [[ "$(basename "$file")" != "README.md" ]]; then
-              pending=1
-              break
-            fi
-          done
-
-          if [[ "$pending" -eq 1 ]]; then
-            echo "has_changesets=true" >> "$GITHUB_OUTPUT"
-          else
-            echo "has_changesets=false" >> "$GITHUB_OUTPUT"
-          fi
-
-      - name: Stop when nothing is pending
-        if: steps.changesets.outputs.has_changesets != 'true'
-        run: echo "No unreleased changesets found."
-
       - name: Version packages
-        if: steps.changesets.outputs.has_changesets == 'true'
-        run: bun run version-packages
-
-      - name: Commit version updates
-        if: steps.changesets.outputs.has_changesets == 'true'
-        shell: bash
+        id: version
         run: |
-          git config user.name "github-actions[bot]"
-          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add .changeset package.json packages bun.lock
+          bun run version-packages
 
-          if git diff --cached --quiet; then
-            echo "No versioned file changes to commit."
+          if git diff --quiet; then
+            echo "No unreleased changesets."
             exit 0
           fi
 
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add .changeset package.json packages bun.lock
           git commit -m "chore: version packages [skip ci] [skip release]"
           git pull --rebase origin main
           git push
 
-      - name: Configure npm token fallback
-        if: steps.changesets.outputs.has_changesets == 'true' && env.NPM_TOKEN != ''
-        shell: bash
-        run: |
-          printf "//registry.npmjs.org/:_authToken=%s\n" "$NODE_AUTH_TOKEN" > ~/.npmrc
-        env:
-          NODE_AUTH_TOKEN: ${{ env.NPM_TOKEN }}
+          echo "versioned=true" >> "$GITHUB_OUTPUT"
 
-      - name: Publish changed packages
-        if: steps.changesets.outputs.has_changesets == 'true'
-        run: bun run release
-        env:
-          NODE_AUTH_TOKEN: ${{ env.NPM_TOKEN }}
-          NPM_CONFIG_PROVENANCE: true
+      # Runs after a new version commit, or on workflow_dispatch to retry
+      # staging a version that is not on npm yet.
+      - name: Stage packages for approval
+        if: steps.version.outputs.versioned == 'true' || github.event_name == 'workflow_dispatch'
+        run: |
+          for dir in packages/*; do
+            manifest="$dir/package.json"
+            name=$(jq -r .name "$manifest")
+            version=$(jq -r .version "$manifest")
+
+            if jq -e .private "$manifest" > /dev/null; then
+              continue
+            fi
+
+            if npm view "$name@$version" version > /dev/null 2>&1; then
+              echo "$name@$version is already on npm."
+              continue
+            fi
+
+            npm stage publish "./$dir"
+            echo "Staged \`$name@$version\`. Approve it on npmjs.com in the Staged Packages tab, or with \`npm stage approve <stage-id>\`." >> "$GITHUB_STEP_SUMMARY"
+          done
